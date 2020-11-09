@@ -1,36 +1,42 @@
 const table = document.querySelector('#cardsTable');
 const deckOfCardsAPI = 'https://deckofcardsapi.com/api/deck/new/';
+
+const getDeck = document.querySelector('#deck');
+getDeck.addEventListener('click', prepareDeck);
+
 const giveCards = document.querySelector('#shuffle');
-giveCards.addEventListener('click', giveHand);
-//const shuffleDeckAPI = `https://deckofcardsapi.com/api/deck/${deckID}/shuffle/`;
+giveCards.addEventListener('click', getCards);
+
 var xhr;
 var deckID;
 var responseCard;
-var imgString;
 
-//clear local storage
-clearLocalStorage();
-prepareDeck();
+document.querySelector('#reload').addEventListener('click', reload);
 
-
-async function giveHand() {
-
-    const card1 = drawACardFromDeck();
-    const card2 = drawACardFromDeck();
-
-    const playersCard1 = document.querySelector('#cardLeft');
-    const playersCard2 = document.querySelector('#cardRight');
-
-    console.log(card1);
-    console.log(card2);
-    playersCard1.innerHTML = `<img src="${card1.cards.image}" alt="}">`;
-    playersCard2.innerHTML = `<img src="${card2.cards.image}" alt="}">`;
+function reload(){
+    window.location.reload();
 }
 
+function getCards() {
 
-async function drawACardFromDeck(prepare){
+    drawACardFromDeck().then(card => {
+        localStorage.setItem('card1', JSON.stringify(card));
+        let card1img = JSON.parse(localStorage.getItem('card1'));
+        document.querySelector('#cardLeft').innerHTML = `<img src="${card1img.cards[0].image}"></img>`;
+    });
+
+
+    drawACardFromDeck().then(card => {
+        localStorage.setItem('card2', JSON.stringify(card));
+        let card1img = JSON.parse(localStorage.getItem('card2'));
+        document.querySelector('#cardRight').innerHTML = `<img src="${card1img.cards[0].image}"></img>`;
+    });
+
+
+}
+
+async function drawACardFromDeck(showCardInDom){
     let deckId = localStorage.getItem('deckID');
-    console.log(deckId);
     const response = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
     responseCard = await response.json();
     console.log(responseCard);
@@ -38,6 +44,8 @@ async function drawACardFromDeck(prepare){
 }
 
 function prepareDeck(){
+    //clear local storage
+    clearLocalStorage();
     // get a deck
     getCardsDeckWithAPI(shuffleDeck);
 
@@ -56,7 +64,6 @@ function getCardsDeckWithAPI(shuffleDeck) {
 
           }else{
               console.log("There was an error getting the cards deck: " + this.errorText);
-
           }
     }
     xhr.send();
@@ -76,30 +83,7 @@ function shuffleDeck(){
     xhr.send();
 }
 
-
 function clearLocalStorage() {
     localStorage.clear();
 }
 
-
-
-
-/*function drawACardFromDeck() {
-    //load deck id from local storage
-    deckID = localStorage.getItem("deckID");
-    var responseCard = null;
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', `https://deckofcardsapi.com/api/deck/${deckID}/draw/?count=1`,true);
-    xhr.onload = function (){
-        if(this.status === 200 && this.readyState === 4){
-            responseCard = JSON.parse(this.responseText);
-            playerHand.push(responseCard.value);
-
-            console.log(responseCard.value.cards.image);
-            return responseCard;
-        }
-
-    }
-    xhr.send();
-    return responseCard;
-}*/
